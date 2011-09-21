@@ -6,7 +6,6 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using BaileySoft.Utility;
 using System.IO;
 
 namespace keystoreBrute
@@ -83,35 +82,23 @@ namespace keystoreBrute
             return result;
         }
 
-        CommandLine oCommandLine = new CommandLine();
-
         public void ExecuteCommand()
         {
-
-            
-
-            String password;
+		    String password;
             password = GetPassword();
             lblPassword.Text = password;
 
-            //CommandLine oCommandLine = new CommandLine();
+            string output = Shell.Execute("keytool", "-list -keystore  " + txtKeystoreFile.Text + " -storepass " + password);
 
-            oCommandLine.ExecutionContext = ExecutionType.WINDOWS_EXECUTE_HIDDEN;
-
-            oCommandLine.Path = "keytool.exe";
-            oCommandLine.Parameters = "-list -keystore \"" + txtKeystoreFile.Text + "\" -storepass " + password;
-            oCommandLine.TimeOut = 20;
-            oCommandLine.Execute();
-
-            if (oCommandLine.ShellOutput.Contains("fingerprint"))
+            if (output.Contains("fingerprint"))
             {
                 MessageBox.Show(String.Format("The Password is {0}", password));
                 passwordLost = false;
             }
 
-            string result = "Password: " + password + "\r\n";
-            result += oCommandLine.ShellOutput;
-            if (oCommandLine.ShellOutput.Trim() == "")
+            string result = "\nPassword: " + password + "\r\n\t";
+            result += output;
+            if (output.Trim() == "")
             {
                 txtFailedPasswords.AppendText(password + "\r\n");
             }
