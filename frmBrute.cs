@@ -84,7 +84,7 @@ namespace keystoreBrute
 
         public void ExecuteCommand()
         {
-		    String password;
+            String password;
             password = GetPassword();
             lblPassword.Text = password;
 
