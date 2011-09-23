@@ -7,123 +7,91 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
+using System.Diagnostics;
 
 namespace keystoreBrute
 {
     public partial class frmBrute : Form
     {
-        public frmBrute()
+        public frmBrute ()
         {
-            InitializeComponent();
+            InitializeComponent ();
         }
 
-        protected override void OnLoad(EventArgs e)
+        protected override void OnLoad (EventArgs e)
         {
-            base.OnLoad(e);
-            string personalFolder = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            base.OnLoad (e);
+            string personalFolder = Environment.GetFolderPath (Environment.SpecialFolder.Personal);
+            
+            if (personalFolder.EndsWith ("Documents"))
+                personalFolder = Path.GetDirectoryName (personalFolder);
 
-            if (personalFolder.EndsWith("Documents"))
-                personalFolder = Path.GetDirectoryName(personalFolder);
+            personalFolder = Path.Combine (personalFolder, ".android");
 
-            personalFolder = Path.Combine(personalFolder, ".android");
-
-            txtKeystoreFile.Text = Path.Combine(personalFolder, "debug.keyStore");
+            txtKeystoreFile.Text = Path.Combine (personalFolder, "debug.keystore");
         }
 
         bool passwordLost;
-        List<String> keyParts = new List<string>();
+        List<string> combinations = new List<string>();
+        int index = 0;
 
-        int part1 = -1;
-        int part2 = -1;
-        int part3 = -1;
-        int part4 = -1;
-        int part5 = -1;
-        public String GetPassword()
+        public string GetPassword ()
         {
-            part1++;
-            if (part1 >= keyParts.Count)
-            {
-                part1 = 0;
-                part2++;
-            }
-            if (part2 >= keyParts.Count)
-            {
-                part2 = 0;
-                part3++;
-            }
-            if (part3 >= keyParts.Count)
-            {
-                part3 = 0;
-                part4++;
-            }
-            if (part3 >= keyParts.Count)
-            {
-                part3 = 0;
-                part4++;
-            }
-            if (part4 >= keyParts.Count)
-            {
-                part4 = 0;
-                part5++;
-            }
-            if (part5 >= keyParts.Count)
-            {
-                MessageBox.Show("Unable to Find Password");
-                passwordLost = false;
-                return "";
-            }
+            if (index < combinations.Count)
+                return combinations[index++];
 
-
-            string result = keyParts[part1];
-            if (part2 >= 0) result += keyParts[part2];
-            if (part3 >= 0) result += keyParts[part3];
-            if (part4 >= 0) result += keyParts[part4];
-            if (part5 >= 0) result += keyParts[part5];
-            return result;
+            MessageBox.Show ("Unable to Find Password");
+            passwordLost = false;
+            return "";
         }
 
-        public void ExecuteCommand()
+        public void ExecuteCommand ()
         {
-            String password;
-            password = GetPassword();
+            String password = GetPassword ();
             lblPassword.Text = password;
 
-            string output = Shell.Execute("keytool", "-list -keystore  " + txtKeystoreFile.Text + " -storepass " + password);
+            Process output = Cmd.Execute ("keytool", "-list -keystore  " + txtKeystoreFile.Text + " -storepass " + password.Replace ("\"", "\\\""));
 
-            if (output.Contains("fingerprint"))
-            {
-                MessageBox.Show(String.Format("The Password is {0}", password));
+            if (output.ExitCode == 0) {
+                MessageBox.Show (String.Format ("The Password is {0}", password));
                 passwordLost = false;
             }
 
             string result = "\nPassword: " + password + "\r\n\t";
-            result += output;
-            if (output.Trim() == "")
-            {
-                txtFailedPasswords.AppendText(password + "\r\n");
-            }
+            result += output.StandardOutput.ReadToEnd ().Trim ();
 
-            txtResults.AppendText(result);
-            
-            
+            txtResults.AppendText (result);
+
+
         }
 
-        private void btnBruteForce_Click(object sender, EventArgs e)
+        private void btnBruteForce_Click (object sender, EventArgs e)
         {
-            keyParts.Clear();
-            keyParts.AddRange(txtKeyParts.Lines);
+            index = 0;
+            List<string> parts = new List<string> ();
+            parts.AddRange (txtKeyParts.Lines);
             txtResults.Text = "";
             txtFailedPasswords.Text = "";
-            while (keyParts.Contains("")) keyParts.Remove("");
+            while (parts.Contains (""))
+                parts.Remove ("");
 
-            txtKeyParts.Lines = keyParts.ToArray();
+            txtKeyParts.Lines = parts.ToArray ();
 
             passwordLost = true;
 
-            while (passwordLost)
-            {
-                ExecuteCommand();
-                Application.DoEvents();
+            combinations.Clear ();
+            List<List<string>> permutations;
+            permutations = PermuteUtils.Permute<string> (parts, parts.Count).Select (permutation => permutation.ToList ()).ToList ();
+
+            while (permutations.First().Count > 0) {
+                Console.WriteLine ("permutations " + permutations.Count);
+                combinations = combinations.Concat (permutations.Select (seq => String.Join ("", seq.ToArray ()))).Distinct ().ToList ();
+                permutations = permutations.Select (seq => seq.Take (seq.Count - 1).ToList ()).ToList ();
+            }
+
+            while (passwordLost) {
+                ExecuteCommand ();
+                Application.DoEvents ();
             }
         }
     }
