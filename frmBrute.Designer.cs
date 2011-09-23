@@ -38,6 +38,8 @@
             this.label3 = new System.Windows.Forms.Label();
             this.txtKeystoreFile = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
+            this.txtMaxPassSegments = new System.Windows.Forms.TextBox();
+            this.label5 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btnBruteForce
@@ -138,11 +140,30 @@
             this.label4.TabIndex = 9;
             this.label4.Text = "keystore";
             // 
+            // txtMaxPassSegments
+            // 
+            this.txtMaxPassSegments.Location = new System.Drawing.Point(271, 112);
+            this.txtMaxPassSegments.Name = "txtMaxPassSegments";
+            this.txtMaxPassSegments.Size = new System.Drawing.Size(68, 20);
+            this.txtMaxPassSegments.TabIndex = 10;
+            this.txtMaxPassSegments.Text = "1000";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(229, 87);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(106, 13);
+            this.label5.TabIndex = 11;
+            this.label5.Text = "Max Pass Segments:";
+            // 
             // frmBrute
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(567, 436);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.txtMaxPassSegments);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.txtKeystoreFile);
             this.Controls.Add(this.label3);
@@ -172,5 +193,7 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox txtKeystoreFile;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.TextBox txtMaxPassSegments;
+        private System.Windows.Forms.Label label5;
     }
 }

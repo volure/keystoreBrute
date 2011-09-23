@@ -13,7 +13,7 @@
             proc.StartInfo.Arguments = arguments;
             proc.StartInfo.RedirectStandardOutput=true;
             proc.StartInfo.RedirectStandardError=true;
-            proc.StartInfo.CreateNoWindow = false;
+            proc.StartInfo.CreateNoWindow = true;
             proc.StartInfo.UseShellExecute = false;
             proc.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
 
